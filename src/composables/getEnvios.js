@@ -17,13 +17,19 @@ export const useGetEnvios = () => {
     }
   };
 
-  const crearEnvioPost = async (nombre) => {
+  const crearEnvioPost = async ( idMachine, idCity, idCompany, guideNumber, shippingReason ) => {
+    const idC = idCity.value
+    const idCom = idCompany.value
     try {
       let header = { headers: { token: token } };
       const { data } = await axios.post(
-        "/empresas/",
+        "/envios/",
         {
-          nombre: nombre,
+          idMaquina: idMachine,
+          ciudad: idC,
+          empresa: idCom,
+          numeroGuia: guideNumber,
+          motivoEnvio: shippingReason,
         },
         header
       );
@@ -55,6 +61,8 @@ export const useGetEnvios = () => {
 
   return {
     getData,
+    crearEnvioPost,
     sends,
+
   };
 };

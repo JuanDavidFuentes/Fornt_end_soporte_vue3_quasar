@@ -28,16 +28,51 @@ const filter = ref("");
 
 // dialog crear/editar envio
 const fixed = ref(false);
-
 const id = ref("");
 const idMachine = ref("");
-const nameMachine = ref("");
-const idCity = ref(null);
-const idCompany = ref(null);
+const idCity = ref("");
+const idCompany = ref("");
 const guideNumber = ref("");
 const shippingReason = ref("");
-
 const swich = ref(0);
+
+const postSends = async () => {
+    const data = await useEnvio.crearEnvioPost(idMachine.value, idCity.value, idCompany.value, guideNumber.value, shippingReason.value);
+    if (data.msg) {
+        fixed.value = false;
+        swal.fire({
+            icon: "success",
+            title: data.msg,
+            showConfirmButton: false,
+            timer: 2500,
+        });
+        cancelSends()
+        await useEnvio.getData();
+        rows.value = useEnvio.sends.value;
+    } else {
+        fixed.value = false;
+        swal.fire({
+            position: "top-end",
+            icon: "error",
+            title: data.response.data.errores.errors[0].msg,
+            showConfirmButton: false,
+            timer: 1500,
+        });
+        setTimeout(() => {
+            fixed.value = true;
+        }, 1500);
+    };
+};
+
+const cancelSends = () => {
+    cancelarSeleccionado();
+    idMachine.value = "";
+    idCity.value = "";
+    idCompany.value = "";
+    guideNumber.value = "";
+    shippingReason.value = "";
+    fixed.value = false;
+}
 
 
 // autocomplete of citys
@@ -68,6 +103,7 @@ function filterFnCompanies(val, update, abort) {
 const fixedMachine = ref(false);
 const rowsMachine = ref([]);
 const filterMachine = ref("");
+const nameMachine = ref("");
 const columsMachine = [
     { name: 'nombre', label: 'Nombre', align: 'center', field: 'nombre' },
     { name: 'serial', label: 'Serial', align: 'center', field: 'serial', sortable: true },
@@ -77,21 +113,17 @@ const columsMachine = [
     { name: 'seleccionar', label: 'Seleccionar', align: 'center', field: 'seleccionar' },
 ];
 
-const traerSeleccionado = (items) =>{
+const traerSeleccionado = (items) => {
     idMachine.value = items._id;
     nameMachine.value = items.nombre;
     swich.value = 1;
     fixedMachine.value = false;
 }
 
-const cancelarSeleccionado = () =>{
-    swich.value = 0 
+const cancelarSeleccionado = () => {
+    swich.value = 0
     idMachine.value = ''
     nameMachine.value = '';
-}
-
-const cancelEquipos = () =>{
-    
 }
 
 // dialog post equipos
@@ -193,11 +225,11 @@ onBeforeMount(async () => {
             <q-card style="width: 700px; max-width: 80vw;">
                 <q-card-section class="row">
                     <div class="col-xs-12 col-sm-12 col-md-6 col-lg-6 col-xl-6 q-pa-sm q-mb-md">
-                        <q-btn v-if="swich === 1" outline rounded icon="highlight_off" class="full-width" style="height: 56px;" :label="nameMachine"
-                            @click="cancelarSeleccionado()" />
+                        <q-btn v-if="swich === 1" outline rounded icon="highlight_off" class="full-width"
+                            style="height: 56px;" :label="nameMachine" @click="cancelarSeleccionado()" />
 
-                        <q-btn v-else rounded color="black dark" class="full-width" style="height: 56px;" label="Agregar equipo"
-                            @click="fixedMachine = true" />
+                        <q-btn v-else rounded color="black dark" class="full-width" style="height: 56px;"
+                            label="Agregar equipo" @click="fixedMachine = true" />
                     </div>
                     <div class="col-xs-12 col-sm-12 col-md-6 col-lg-6 col-xl-6 q-pa-sm q-mb-md">
                         <q-select rounded outlined v-model="idCity" use-input hide-selected fill-input input-debounce="0"
@@ -233,9 +265,9 @@ onBeforeMount(async () => {
                     </div>
                 </q-card-section>
                 <q-card-actions align="right">
-                    <q-btn rounded outline label="Cancerlar" color="red" @click="fixed = false" /> <!--cancel()-->
-                    <!-- <q-btn rounded outline label="Aceptar" color="green" v-if="swich === 0" @click="postUsuario()" />
-                    <q-btn rounded outline label="Editar" color="green" v-else @click="putUsuarios()" /> -->
+                    <q-btn rounded outline label="Cancerlar" color="red" @click="cancelSends()" /> <!--cancel()-->
+                    <q-btn rounded outline label="Aceptar" color="green" @click="postSends()" />
+                    <!-- <q-btn rounded outline label="Editar" color="green" v-else @click="putUsuarios()" /> -->
                 </q-card-actions>
             </q-card>
         </q-dialog>
@@ -267,7 +299,8 @@ onBeforeMount(async () => {
                         </template>
                         <template v-slot:body-cell-seleccionar="props">
                             <q-td :props="props">
-                                <q-btn outline rounded color="green" icon="add_circle_outline" @click="traerSeleccionado(props.row)">
+                                <q-btn outline rounded color="green" icon="add_circle_outline"
+                                    @click="traerSeleccionado(props.row)">
                                     <q-tooltip>Seleccionar este equipo</q-tooltip>
                                 </q-btn>
                             </q-td>
