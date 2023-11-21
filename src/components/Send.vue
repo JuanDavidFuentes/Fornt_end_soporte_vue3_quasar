@@ -12,7 +12,7 @@ const useMachines = useGetMachines();
 
 
 
-// data table
+// data table sends
 const rows = ref([]);
 const columns = [
     { name: 'equipo', label: 'Equipo', align: 'center', field: 'equipo' },
@@ -34,7 +34,8 @@ const idCity = ref("");
 const idCompany = ref("");
 const guideNumber = ref("");
 const shippingReason = ref("");
-const swich = ref(0);
+const swichButton = ref(0);
+const swichEdit = ref(0);
 
 const postSends = async () => {
     const data = await useEnvio.crearEnvioPost(idMachine.value, idCity.value, idCompany.value, guideNumber.value, shippingReason.value);
@@ -64,14 +65,106 @@ const postSends = async () => {
     };
 };
 
-const cancelSends = () => {
-    cancelarSeleccionado();
-    idMachine.value = "";
-    idCity.value = "";
-    idCompany.value = "";
-    guideNumber.value = "";
-    shippingReason.value = "";
-    fixed.value = false;
+// traer datos
+const traerDatos = (items) => {
+    swichEdit.value = 1;
+    swichButton.value = 1;
+    idMachine.value = items.idMaquina._id;
+    nameMachine.value = items.idMaquina.nombre;
+    id.value = items._id;
+    idCity.value = {
+        label: items.ciudad.ciudad,
+        value: items.ciudad._id,
+    }
+    idCompany.value = {
+        label: items.empresa.nombre,
+        value: items.empresa._id
+    }
+    guideNumber.value = items.numeroGuia;
+    shippingReason.value = items.motivoEnvio;
+    fixed.value = true;
+}
+
+
+const putSends = async () => {
+    const data = await useEnvio.editarEnvio(id.value, idMachine.value, idCity.value, idCompany.value, guideNumber.value, shippingReason.value);
+    if (data.msg) {
+        fixed.value = false;
+        swal.fire({
+            icon: "success",
+            title: data.msg,
+            showConfirmButton: false,
+            timer: 2500,
+        });
+        cancelSends()
+        await useEnvio.getData();
+        rows.value = useEnvio.sends.value;
+    } else {
+        fixed.value = false;
+        swal.fire({
+            position: "top-end",
+            icon: "error",
+            title: data.response.data.errores.errors[0].msg,
+            showConfirmButton: false,
+            timer: 1500,
+        });
+        setTimeout(() => {
+            fixed.value = true;
+        }, 1500);
+    };
+}
+
+
+// inactivar he activar envio
+const activar = async (id) => {
+    const data = await useEnvio.activarEnvio(id);
+    if (data.msg) {
+        swal.fire({
+            icon: "success",
+            title: data.msg,
+            showConfirmButton: false,
+            timer: 1500,
+        });
+        await useEnvio.getData();
+        rows.value = useEnvio.sends.value;
+    } else {
+        swal.fire({
+            position: "top-end",
+            icon: "error",
+            title: "Inicia sesión nuevamente",
+            showConfirmButton: false,
+            timer: 1500,
+        });
+    }
+}
+
+const inactivar = async (id) => {
+    const data = await useEnvio.inactivarEnvio(id);
+    if (data.msg) {
+        swal.fire({
+            icon: "success",
+            title: data.msg,
+            showConfirmButton: false,
+            timer: 1500,
+        });
+        await useEnvio.getData();
+        rows.value = useEnvio.sends.value;
+    } else {
+        swal.fire({
+            position: "top-end",
+            icon: "error",
+            title: "Inicia sesión nuevamente",
+            showConfirmButton: false,
+            timer: 1500,
+        });
+    }
+}
+
+
+//img
+
+const crearImagen = () => {
+    console.log("Welcome to league of legens");
 }
 
 
@@ -98,6 +191,17 @@ function filterFnCompanies(val, update, abort) {
     });
 };
 
+const cancelSends = () => {
+    cancelarSeleccionado();
+    swichEdit.value = 0;
+    id.value = "";
+    idMachine.value = "";
+    idCity.value = "";
+    idCompany.value = "";
+    guideNumber.value = "";
+    shippingReason.value = "";
+    fixed.value = false;
+}
 
 //dialog equipos
 const fixedMachine = ref(false);
@@ -116,12 +220,12 @@ const columsMachine = [
 const traerSeleccionado = (items) => {
     idMachine.value = items._id;
     nameMachine.value = items.nombre;
-    swich.value = 1;
+    swichButton.value = 1;
     fixedMachine.value = false;
 }
 
 const cancelarSeleccionado = () => {
-    swich.value = 0
+    swichButton.value = 0
     idMachine.value = ''
     nameMachine.value = '';
 }
@@ -225,7 +329,7 @@ onBeforeMount(async () => {
             <q-card style="width: 700px; max-width: 80vw;">
                 <q-card-section class="row">
                     <div class="col-xs-12 col-sm-12 col-md-6 col-lg-6 col-xl-6 q-pa-sm q-mb-md">
-                        <q-btn v-if="swich === 1" outline rounded icon="highlight_off" class="full-width"
+                        <q-btn v-if="swichButton === 1" outline rounded icon="highlight_off" class="full-width"
                             style="height: 56px;" :label="nameMachine" @click="cancelarSeleccionado()" />
 
                         <q-btn v-else rounded color="black dark" class="full-width" style="height: 56px;"
@@ -266,8 +370,8 @@ onBeforeMount(async () => {
                 </q-card-section>
                 <q-card-actions align="right">
                     <q-btn rounded outline label="Cancerlar" color="red" @click="cancelSends()" /> <!--cancel()-->
-                    <q-btn rounded outline label="Aceptar" color="green" @click="postSends()" />
-                    <!-- <q-btn rounded outline label="Editar" color="green" v-else @click="putUsuarios()" /> -->
+                    <q-btn rounded outline label="Aceptar" color="green" v-if="swichEdit === 0" @click="postSends()" />
+                    <q-btn rounded outline label="Editar" color="green" v-else @click="putSends()" />
                 </q-card-actions>
             </q-card>
         </q-dialog>
@@ -380,8 +484,16 @@ onBeforeMount(async () => {
             </template>
             <template v-slot:body-cell-imgGuia="props">
                 <q-td :props="props">
-                    <q-img v-if="props.row.imgGuia" :src="props.row.imgGuia" :ratio="16 / 9" />
-                    <q-img v-else src="../src/assets/img_not_foud.png" :ratio="16 / 9" />
+                    <q-img v-if="props.row.imgGuia" :src="props.row.imgGuia" style="cursor: pointer;" :ratio="16 / 9">
+                        <q-tooltip>
+                            Editar imagen
+                        </q-tooltip>
+                    </q-img>
+                    <q-img v-else src="../src/assets/img_not_foud.png" @click="crearImagen()" style="cursor: pointer;" :ratio="16 / 9">
+                        <q-tooltip>
+                            Agregar imagen
+                        </q-tooltip>
+                    </q-img>
                 </q-td>
             </template>
             <template v-slot:body-cell-estado="props">

@@ -17,9 +17,15 @@ export const useGetEnvios = () => {
     }
   };
 
-  const crearEnvioPost = async ( idMachine, idCity, idCompany, guideNumber, shippingReason ) => {
-    const idC = idCity.value
-    const idCom = idCompany.value
+  const crearEnvioPost = async (
+    idMachine,
+    idCity,
+    idCompany,
+    guideNumber,
+    shippingReason
+  ) => {
+    const idC = idCity.value;
+    const idCom = idCompany.value;
     try {
       let header = { headers: { token: token } };
       const { data } = await axios.post(
@@ -39,10 +45,32 @@ export const useGetEnvios = () => {
     }
   };
 
+  const editarEnvio = async ( id, idMachine, idCity, idCompany, guideNumber, shippingReason ) => {
+    const idC = idCity.value;
+    const idCom = idCompany.value;
+    try {
+      let header = { headers: { token: token } };
+      const { data } = await axios.put(
+        `/envios/${id}`,
+        {
+          idMaquina: idMachine,
+          ciudad: idC,
+          empresa: idCom,
+          numeroGuia: guideNumber,
+          motivoEnvio: shippingReason,
+        },
+        header
+      );
+      return data;
+    } catch (error) {
+      return error;
+    }
+  };
+
   const inactivarEnvio = async (id) => {
     try {
       let header = { headers: { token: token } };
-      const { data } = await axios.put(`empresas/desactivar/${id}`, {}, header);
+      const { data } = await axios.put(`envios/desactivar/${id}`, {}, header);
       return data;
     } catch (error) {
       console.log(error);
@@ -52,7 +80,7 @@ export const useGetEnvios = () => {
   const activarEnvio = async (id) => {
     try {
       let header = { headers: { token: token } };
-      const { data } = await axios.put(`empresas/activar/${id}`, {}, header);
+      const { data } = await axios.put(`envios/activar/${id}`, {}, header);
       return data;
     } catch (error) {
       console.log(error);
@@ -62,7 +90,9 @@ export const useGetEnvios = () => {
   return {
     getData,
     crearEnvioPost,
+    editarEnvio,
+    inactivarEnvio,
+    activarEnvio,
     sends,
-
   };
 };
