@@ -45,7 +45,14 @@ export const useGetEnvios = () => {
     }
   };
 
-  const editarEnvio = async ( id, idMachine, idCity, idCompany, guideNumber, shippingReason ) => {
+  const editarEnvio = async (
+    id,
+    idMachine,
+    idCity,
+    idCompany,
+    guideNumber,
+    shippingReason
+  ) => {
     const idC = idCity.value;
     const idCom = idCompany.value;
     try {
@@ -87,12 +94,30 @@ export const useGetEnvios = () => {
     }
   };
 
+  const crearIMG = async (id, imgGuide) => {
+    try {
+      let fd = new FormData();
+      fd.append("archivo", imgGuide);
+      let header = { headers: { token: token } };
+      if (imgGuide != undefined) {
+        console.log(fd);
+        const { data } = await axios.put(`/envios/cargarCloud/${this.id}`, fd, header);
+        return data;
+      } else {
+        return "Error"
+      }
+    } catch (error) {
+      return error
+    }
+  };
+
   return {
     getData,
     crearEnvioPost,
     editarEnvio,
     inactivarEnvio,
     activarEnvio,
+    crearIMG,
     sends,
   };
 };

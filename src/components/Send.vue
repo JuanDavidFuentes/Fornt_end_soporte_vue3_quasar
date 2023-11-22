@@ -162,11 +162,27 @@ const inactivar = async (id) => {
 
 
 //img
+const swichEditIMG = ref(0);
+const fixedIMG = ref(false);
+const imgGuide = ref("");
+const idSendIMG = ref('');
 
-const crearImagen = () => {
-    console.log("Welcome to league of legens");
+const subir = (e) => {
+    imgGuide.value = e.target.files[0]
+    console.log(imgGuide.value);
 }
 
+const dialogIMG = (idImg) => {
+    fixedIMG.value = true;
+    idSendIMG.value = idImg
+}
+
+const cancelIMG = () => {
+    fixedIMG.value = false;
+    idSendIMG.value = '';
+    swichEditIMG.value = 1;
+    imgGuide.value = "";
+}
 
 // autocomplete of citys
 let citys = [];
@@ -369,9 +385,39 @@ onBeforeMount(async () => {
                     </div>
                 </q-card-section>
                 <q-card-actions align="right">
-                    <q-btn rounded outline label="Cancerlar" color="red" @click="cancelSends()" /> <!--cancel()-->
+                    <q-btn rounded outline label="Cancelar" color="red" @click="cancelSends()" />
                     <q-btn rounded outline label="Aceptar" color="green" v-if="swichEdit === 0" @click="postSends()" />
                     <q-btn rounded outline label="Editar" color="green" v-else @click="putSends()" />
+                </q-card-actions>
+            </q-card>
+        </q-dialog>
+
+
+        <!--Img Dialog-->
+        <q-dialog v-model="fixedIMG" persistent transition-show="rotate" transition-hide="rotate">
+            <q-card style="width:600px; max-width: 80vw;">
+                <q-card-section class="text-right">
+                    <div class="container-input">
+                        <input type="file" name="file-5" id="file-5" @change="subir" class="inputfile inputfile-5"
+                            data-multiple-caption="{count} archivos seleccionados" multiple />
+                        <label for="file-5">
+                            <figure>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="iborrainputfile" width="20" height="17"
+                                    viewBox="0 0 20 17">
+                                    <path
+                                        d="M10 0l-5.2 4.9h3.3v5.1h3.8v-5.1h3.3l-5.2-4.9zm9.3 11.5l-3.2-2.1h-2l3.4 2.6h-3.5c-.1 0-.2.1-.2.1l-.8 2.3h-6l-.8-2.2c-.1-.1-.1-.2-.2-.2h-3.6l3.4-2.6h-2l-3.2 2.1c-.4.3-.7 1-.6 1.5l.6 3.1c.1.5.7.9 1.2.9h16.3c.6 0 1.1-.4 1.3-.9l.6-3.1c.1-.5-.2-1.2-.7-1.5z">
+                                    </path>
+                                </svg>
+                            </figure>
+                            <span v-if="imgGuide === ''" class="iborrainputfile">Subir archivo</span>
+                            <span v-else class="iborrainputfile">{{ imgGuide.name }}</span>
+                        </label>
+                    </div>
+                </q-card-section>
+                <q-card-actions align="right">
+                    <q-btn rounded outline label="Cancelar" color="red" @click="cancelIMG()" />
+                    <q-btn rounded outline label="Aceptar" color="green" @click="" />
+                    <q-btn rounded outline label="Editar" color="green"  @click="" />
                 </q-card-actions>
             </q-card>
         </q-dialog>
@@ -415,7 +461,7 @@ onBeforeMount(async () => {
                     ¿Desea crear un equipo?
                 </div>
                 <q-card-actions align="center">
-                    <q-btn rounded outline label="Cancerlar" color="red" @click="fixedMachine = false" /> <!--cancel()-->
+                    <q-btn rounded outline label="Cancelar" color="red" @click="fixedMachine = false" />
                     <q-btn rounded outline label="Aceptar" color="green" @click="fixedPostMachine = true" />
                 </q-card-actions>
             </q-card>
@@ -444,7 +490,7 @@ onBeforeMount(async () => {
                 </q-card-section>
 
                 <q-card-actions align="right">
-                    <q-btn rounded outline label="Cancerlar" color="red" @click="cancelMachine()" />
+                    <q-btn rounded outline label="Cancelar" color="red" @click="cancelMachine()" />
                     <q-btn rounded outline label="Aceptar" color="green"
                         @click="postMachine(name, serial, af, machineStatus)" />
                 </q-card-actions>
@@ -484,22 +530,28 @@ onBeforeMount(async () => {
             </template>
             <template v-slot:body-cell-imgGuia="props">
                 <q-td :props="props">
-                    <q-img v-if="props.row.imgGuia" :src="props.row.imgGuia" style="cursor: pointer;" :ratio="16 / 9">
-                        <q-tooltip>
-                            Editar imagen
-                        </q-tooltip>
+                    <q-img v-if="props.row.imgGuia" :src="props.row.imgGuia" :ratio="16 / 9">
+                        <q-icon class="absolute all-pointer-events" size="25px" name="edit" color="primary"
+                            style="top: 5%; left: 5%; cursor: pointer;">
+                            <q-tooltip>
+                                Editar imagen
+                            </q-tooltip>
+                        </q-icon>
                     </q-img>
-                    <q-img v-else src="../src/assets/img_not_foud.png" @click="crearImagen()" style="cursor: pointer;" :ratio="16 / 9">
-                        <q-tooltip>
-                            Agregar imagen
-                        </q-tooltip>
+                    <q-img v-else src="../src/assets/img_not_foud.png" :ratio="16 / 9">
+                        <q-icon class="absolute all-pointer-events" size="25px" name="add_a_photo" color="green"
+                            @click="dialogIMG(props.row._id)" style="top: 5%; left: 5%; cursor: pointer;">
+                            <q-tooltip>
+                                Añadir imagen
+                            </q-tooltip>
+                        </q-icon>
                     </q-img>
                 </q-td>
             </template>
             <template v-slot:body-cell-estado="props">
                 <q-td :props="props">
-                    <span v-if="props.row.estado === 1" class="text-green"> Activo </span>
-                    <span v-else class="text-red"> Inactivo </span>
+                    <span v-if="props.row.estado === 1" class="text-green"> Enviado </span>
+                    <span v-else class="text-orange"> Recivido </span>
                 </q-td>
             </template>
             <template v-slot:body-cell-opciones="props">
@@ -509,14 +561,95 @@ onBeforeMount(async () => {
                     </q-btn>
                     <q-btn :class="props.row.estado == 1 ? 'q-mx-sm' : ''" outline rounded v-if="props.row.estado === 1"
                         color="red" icon="remove_moderator" @click="inactivar(props.row._id)">
-                        <q-tooltip>Inactivar envío</q-tooltip>
+                        <q-tooltip>Marcar como <span class="text-green">'Recivido'</span></q-tooltip>
                     </q-btn>
                     <q-btn :class="props.row.estado == 0 ? 'q-mx-sm' : ''" outline rounded v-else color="green"
                         icon="verified_user" @click="activar(props.row._id)">
-                        <q-tooltip>Activar envío</q-tooltip>
+                        <q-tooltip>Marcar como <span class="text-orange">'Enviado'</span></q-tooltip>
                     </q-btn>
                 </q-td>
             </template>
         </q-table>
     </q-page>
 </template>
+
+
+<style>
+.container-input {
+    text-align: center;
+    background: #282828;
+    border-top: 5px solid #c39f77;
+    padding: 50px 0;
+    border-radius: 6px;
+    width: 100%;
+    margin: 0 auto;
+}
+
+.inputfile {
+    width: 0.1px;
+    height: 0.1px;
+    opacity: 0;
+    overflow: hidden;
+    position: absolute;
+    z-index: -1;
+}
+
+.inputfile+label {
+    max-width: 80%;
+    font-size: 1.25rem;
+    font-weight: 700;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    cursor: pointer;
+    display: inline-block;
+    overflow: hidden;
+    padding: 0.625rem 1.25rem;
+}
+
+.inputfile+label svg {
+    width: 1em;
+    height: 1em;
+    vertical-align: middle;
+    fill: currentColor;
+    margin-top: -0.25em;
+    margin-right: 0.25em;
+}
+
+.iborrainputfile {
+    font-size: 16px;
+    font-weight: normal;
+    font-family: 'Lato';
+}
+
+.inputfile-5+label {
+    color: #c39f77;
+}
+
+.inputfile-5:focus+label,
+.inputfile-5.has-focus+label,
+.inputfile-5+label:hover {
+    color: #9f8465;
+}
+
+.inputfile-5+label figure {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background-color: #c39f77;
+    display: block;
+    padding: 20px;
+    margin: 0 auto 10px;
+}
+
+.inputfile-5:focus+label figure,
+.inputfile-5.has-focus+label figure,
+.inputfile-5+label:hover figure {
+    background-color: #9f8465;
+}
+
+.inputfile-5+label svg {
+    width: 100%;
+    height: 100%;
+    fill: #fff;
+}
+</style>
